@@ -1,5 +1,107 @@
-<!DOCTYPE html><html lang="ru"><head>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
     <meta charset="UTF-8">
-    <title>Базовая разметка HTML</title></head><body>
-    <h1>Code Basics</h1>
-    <p></p></body></html>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Умный Дом</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏠 Умный Дом</h1>
+        </header>
+
+        <!-- Голосовое управление -->
+        <div class="section" id="voiceSection">
+            <div class="voice-status" id="voiceStatus">Голосовой помощник готов</div>
+            <div class="voice-control">
+                <button id="voiceBtn" class="voice-btn">
+                    <svg class="mic-icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 1C10.34 1 9 2.34 9 4V12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12V4C15 2.34 13.66 1 12 1Z" fill="currentColor"/>
+                        <path d="M19 10V12C19 16.42 15.42 20 11 20H13C17.42 20 21 16.42 21 12V10H19Z" fill="currentColor"/>
+                        <path d="M5 10V12C5 16.42 8.58 20 13 20H11C6.58 20 3 16.42 3 12V10H5Z" fill="currentColor"/>
+                        <path d="M12 22V20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M8 22H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Управление техникой -->
+        <div class="section hidden" id="devicesSection">
+            <div class="devices-grid">
+                <div class="device-card" data-device="light">
+                    <h3>💡 Освещение</h3>
+                    <button class="toggle-btn" data-action="toggle">Выключен</button>
+                    <input type="range" class="brightness" min="0" max="100" value="50">
+                    <span class="value-display">50%</span>
+                </div>
+
+                <div class="device-card" data-device="temperature">
+                    <h3>🌡️ Температура</h3>
+                    <div class="temp-display">22°C</div>
+                    <button class="temp-btn" data-action="increase">+</button>
+                    <button class="temp-btn" data-action="decrease">-</button>
+                </div>
+
+                <div class="device-card" data-device="security">
+                    <h3>🔒 Безопасность</h3>
+                    <button class="toggle-btn security-btn" data-action="toggle">Отключена</button>
+                    <div class="status">Система отключена</div>
+                </div>
+
+                <div class="device-card" data-device="music">
+                    <h3>🎵 Музыка</h3>
+                    <button class="toggle-btn" data-action="play">Остановлена</button>
+                    <input type="range" class="volume" min="0" max="100" value="30">
+                    <span class="value-display">30%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Настройки -->
+        <div class="section hidden" id="settingsSection">
+            <div class="settings-grid">
+                <div class="setting-card">
+                    <h3>🌐 Язык</h3>
+                    <select id="languageSelect">
+                        <option value="ru">Русский</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <div class="setting-card">
+                    <h3>🎨 Тема</h3>
+                    <div class="theme-switch">
+                        <span class="theme-label">Темная</span>
+                        <label class="switch">
+                            <input type="checkbox" id="themeToggle">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="theme-label">Светлая</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Навигация -->
+    <nav class="bottom-nav">
+        <div class="nav-indicator"></div>
+        <button class="nav-btn active" data-section="voiceSection">
+            <span class="nav-icon">🎤</span>
+            <span class="nav-text">Голос</span>
+        </button>
+        <button class="nav-btn" data-section="devicesSection">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Устройства</span>
+        </button>
+        <button class="nav-btn" data-section="settingsSection">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Настройки</span>
+        </button>
+    </nav>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
