@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Температура</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #1a1a1a; color: white; }
+        .thermometer { width: 100px; height: 300px; background: #333; border-radius: 50px; margin: 20px auto; position: relative; }
+        .mercury { width: 80px; height: 20px; background: #ff4444; border-radius: 40px; position: absolute; bottom: 10px; left: 10px; transition: height 0.3s; }
+        .temperature-display { font-size: 48px; margin: 20px; }
+        .controls button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>🌡️ Температура</h1>
+    
+    <div class="thermometer">
+        <div id="mercury" class="mercury"></div>
+    </div>
+    
+    <div class="temperature-display">
+        <span id="tempValue">22</span>°C
+    </div>
+    
+
+
+    <script>
+        let state = { value: 22 };
+
+        function updateUI() {
+            const tempValue = document.getElementById('tempValue');
+            const mercury = document.getElementById('mercury');
+            
+            tempValue.textContent = state.value;
+            const height = ((state.value - 15) / 15) * 280;
+            mercury.style.height = height + 'px';
+            
+            if (state.value < 20) mercury.style.background = '#4444ff';
+            else if (state.value > 25) mercury.style.background = '#ff4444';
+            else mercury.style.background = '#44ff44';
+        }
+
+        function increaseTemp() {
+            if (state.value < 30) {
+                state.value++;
+                updateState();
+            }
+        }
+
+        function decreaseTemp() {
+            if (state.value > 15) {
+                state.value--;
+                updateState();
+            }
+        }
+
+        function updateState() {
+            fetch('/api/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(state)
+            });
+            updateUI();
+        }
+
+        function loadState() {
+            fetch('/api/state')
+                .then(response => response.json())
+                .then(data => {
+                    state = data;
+                    updateUI();
+                });
+        }
+
+        setInterval(loadState, 1000);
+        loadState();
+    </script>
+</body>
+</html>

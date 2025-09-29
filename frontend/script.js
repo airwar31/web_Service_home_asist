@@ -4,7 +4,7 @@ class SmartHomeController {
             light: { status: false, brightness: 50 },
             temperature: { value: 22 },
             security: { status: false },
-            music: { status: false, volume: 30 }
+            music: { status: false, volume: 30, bluetooth_connected: false, bluetooth_device: null }
         };
         
         this.recognition = null;
@@ -126,6 +126,11 @@ class SmartHomeController {
 
         document.getElementById('languageSelect').addEventListener('change', (e) => {
             this.changeLanguage(e.target.value);
+        });
+        
+        // Bluetooth управление
+        document.getElementById('bluetoothBtn').addEventListener('click', () => {
+            this.handleBluetoothToggle();
         });
     }
 
@@ -334,12 +339,69 @@ class SmartHomeController {
                 const musicBtn = card.querySelector('.toggle-btn');
                 const volumeSlider = card.querySelector('.volume');
                 const volumeDisplay = card.querySelector('.value-display');
+                const bluetoothStatus = card.querySelector('#bluetoothStatus');
                 
                 musicBtn.classList.toggle('active', this.devices.music.status);
                 musicBtn.textContent = this.devices.music.status ? 'Играет' : 'Остановлена';
                 volumeSlider.value = this.devices.music.volume;
                 volumeDisplay.textContent = `${this.devices.music.volume}%`;
+                
+                // Обновляем Bluetooth статус
+                if (this.devices.music.bluetooth_connected && this.devices.music.bluetooth_device) {
+                    bluetoothStatus.textContent = `Подключен: ${this.devices.music.bluetooth_device}`;
+                    bluetoothStatus.style.color = '#4CAF50';
+                } else {
+                    bluetoothStatus.textContent = 'Не подключен';
+                    bluetoothStatus.style.color = '#888';
+                }
                 break;
+        }
+    }
+    
+    async handleBluetoothToggle() {
+        try {
+            if (this.devices.music.bluetooth_connected) {
+                // Отключаем
+                const response = await fetch('/api/bluetooth/disconnect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ device_name: this.devices.music.bluetooth_device })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    this.devices.music.bluetooth_connected = false;
+                    this.devices.music.bluetooth_device = null;
+                    this.updateDeviceUI('music');
+                    this.speak('Отключено от Bluetooth устройства');
+                }
+            } else {
+                // Сканируем и подключаем
+                const scanResponse = await fetch('/api/bluetooth/scan');
+                const scanResult = await scanResponse.json();
+                
+                if (scanResult.devices && scanResult.devices.length > 0) {
+                    // Подключаемся к первому найденному устройству
+                    const device = scanResult.devices[0];
+                    const connectResponse = await fetch('/api/bluetooth/connect', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ device_name: device.name })
+                    });
+                    const connectResult = await connectResponse.json();
+                    
+                    if (connectResult.success) {
+                        this.devices.music.bluetooth_connected = true;
+                        this.devices.music.bluetooth_device = device.name;
+                        this.updateDeviceUI('music');
+                        this.speak(`Подключено к ${device.name}`);
+                    }
+                } else {
+                    this.speak('Не найдено Bluetooth устройств');
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка Bluetooth:', error);
+            this.speak('Ошибка подключения Bluetooth');
         }
     }
 }

@@ -48,6 +48,8 @@ class Music(Device):
     def __init__(self, name="music"):
         super().__init__(name, "music")
         self.volume = 30
+        self.bluetooth_connected = False
+        self.bluetooth_device = None
         
     def toggle(self):
         self.status = not self.status
@@ -56,6 +58,16 @@ class Music(Device):
     def set_volume(self, value):
         self.volume = max(0, min(100, value))
         return self.volume
+    
+    def connect_bluetooth(self, device_name):
+        self.bluetooth_connected = True
+        self.bluetooth_device = device_name
+        return True
+    
+    def disconnect_bluetooth(self):
+        self.bluetooth_connected = False
+        self.bluetooth_device = None
+        return True
 
 class DeviceManager:
     def __init__(self):
@@ -79,7 +91,12 @@ class DeviceManager:
             elif name == 'security':
                 states[name] = {'status': device.status}
             elif name == 'music':
-                states[name] = {'status': device.status, 'volume': device.volume}
+                states[name] = {
+                    'status': device.status, 
+                    'volume': device.volume,
+                    'bluetooth_connected': device.bluetooth_connected,
+                    'bluetooth_device': device.bluetooth_device
+                }
         return states
     
     def update_device(self, name, data):
@@ -103,5 +120,10 @@ class DeviceManager:
                 device.status = data['status']
             if 'volume' in data:
                 device.set_volume(data['volume'])
+            if 'bluetooth_connected' in data:
+                if data['bluetooth_connected']:
+                    device.connect_bluetooth(data.get('bluetooth_device', 'Unknown'))
+                else:
+                    device.disconnect_bluetooth()
         
         return True

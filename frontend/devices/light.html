@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лампочка</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #1a1a1a; color: white; }
+        .light-bulb { width: 200px; height: 200px; border-radius: 50%; margin: 20px auto; transition: all 0.3s; }
+        .light-off { background: #333; box-shadow: none; }
+        .light-on { background: #ffeb3b; box-shadow: 0 0 50px #ffeb3b; }
+        .controls { margin: 20px; }
+        input[type="range"] { width: 200px; }
+        input[type="color"] { width: 100px; height: 50px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>💡 Лампочка</h1>
+    <div id="lightBulb" class="light-bulb light-off"></div>
+    
+
+
+    <script>
+        let state = { status: false, brightness: 50, color: '#ffffff' };
+
+        function updateUI() {
+            const bulb = document.getElementById('lightBulb');
+            const brightness = document.getElementById('brightness');
+            const color = document.getElementById('color');
+            
+            bulb.className = state.status ? 'light-bulb light-on' : 'light-bulb light-off';
+            if (state.status) {
+                bulb.style.background = state.color;
+                bulb.style.opacity = state.brightness / 100;
+            }
+            brightness.value = state.brightness;
+            color.value = state.color;
+        }
+
+        function toggleLight() {
+            state.status = !state.status;
+            updateState();
+        }
+
+        function setBrightness() {
+            state.brightness = document.getElementById('brightness').value;
+            updateState();
+        }
+
+        function setColor() {
+            state.color = document.getElementById('color').value;
+            updateState();
+        }
+
+        function updateState() {
+            fetch('/api/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(state)
+            });
+            updateUI();
+        }
+
+        function loadState() {
+            fetch('/api/state')
+                .then(response => response.json())
+                .then(data => {
+                    state = data;
+                    updateUI();
+                });
+        }
+
+        setInterval(loadState, 1000);
+        loadState();
+    </script>
+</body>
+</html>

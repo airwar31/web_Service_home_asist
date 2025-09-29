@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Музыка</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #1a1a1a; color: white; }
+        .music-player { width: 300px; height: 200px; background: #333; border-radius: 20px; margin: 20px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s; }
+        .music-on { background: #4CAF50; box-shadow: 0 0 30px #4CAF50; }
+        .play-icon { font-size: 60px; margin: 10px; }
+        .volume-control { margin: 20px; }
+        input[type="range"] { width: 200px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>🎵 Музыка</h1>
+    
+    <div id="musicPlayer" class="music-player">
+        <div id="playIcon" class="play-icon">⏸️</div>
+        <div id="statusText">Музыка остановлена</div>
+        <div id="bluetoothStatus" style="font-size: 14px; margin-top: 10px;">🔵 Bluetooth: не подключен</div>
+    </div>
+    
+
+
+    <script>
+        let state = { status: false, volume: 30, bluetooth_connected: false, bluetooth_device: null };
+
+        function updateUI() {
+            const player = document.getElementById('musicPlayer');
+            const playIcon = document.getElementById('playIcon');
+            const statusText = document.getElementById('statusText');
+            const bluetoothStatus = document.getElementById('bluetoothStatus');
+            
+            if (state.status) {
+                player.className = 'music-player music-on';
+                playIcon.textContent = '▶️';
+                statusText.textContent = 'Музыка играет';
+            } else {
+                player.className = 'music-player';
+                playIcon.textContent = '⏸️';
+                statusText.textContent = 'Музыка остановлена';
+            }
+            
+            // Обновляем Bluetooth статус
+            if (state.bluetooth_connected && state.bluetooth_device) {
+                bluetoothStatus.textContent = `🔵 Bluetooth: ${state.bluetooth_device}`;
+                bluetoothStatus.style.color = '#4CAF50';
+            } else {
+                bluetoothStatus.textContent = '🔵 Bluetooth: не подключен';
+                bluetoothStatus.style.color = '#888';
+            }
+        }
+
+        function toggleMusic() {
+            state.status = !state.status;
+            updateState();
+        }
+
+        function setVolume() {
+            state.volume = document.getElementById('volume').value;
+            updateState();
+        }
+
+        function updateState() {
+            fetch('/api/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(state)
+            });
+            updateUI();
+        }
+
+        function loadState() {
+            fetch('/api/state')
+                .then(response => response.json())
+                .then(data => {
+                    state = data;
+                    updateUI();
+                });
+        }
+
+        setInterval(loadState, 1000);
+        loadState();
+    </script>
+</body>
+</html>
